@@ -28,8 +28,6 @@ export default function Avatar({
       style={{
         width: pixelSize,
         height: pixelSize,
-        margin: "0 auto",
-        display: "block",
       }}
     >
       <img

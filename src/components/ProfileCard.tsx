@@ -7,29 +7,32 @@ interface ProfileCardProps {
 
 export default function ProfileCard({ name, studentId }: ProfileCardProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-100">
         {/* Header với background gradient */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 mb-6 text-center text-white">
           <h1 className="text-2xl font-bold mb-2">Thông tin cá nhân</h1>
+          <p className="text-blue-100 text-sm">Student Profile</p>
         </div>
 
         {/* Avatar và thông tin */}
         <div className="text-center space-y-6">
           {/* Avatar */}
-          <div className="w-full">
-            <Avatar name={name} size="w-24 h-24" />
+          <div className="flex justify-center">
+            <Avatar name={name} size="w-20 h-20" />
           </div>
 
           {/* Thông tin chi tiết */}
           <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Họ và tên : {name}</p>
+            <div className="bg-gray-50 rounded-lg p-5">
+              <p className="text-sm text-gray-600 mb-1">Họ và tên</p>
+              <p className="text-xl font-semibold text-gray-800">{name}</p>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">
-                Mã số sinh viên : {studentId}
+            <div className="bg-gray-50 rounded-lg p-5">
+              <p className="text-sm text-gray-600 mb-1">Mã số sinh viên</p>
+              <p className="text-xl font-semibold text-gray-800 font-mono">
+                {studentId}
               </p>
             </div>
           </div>
