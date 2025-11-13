@@ -22,8 +22,8 @@ function MyProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-4xl border border-gray-200">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 w-[700px]] max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-4xl border border-gray-200">
         {/* Header với background gradient */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-4 sm:p-6 mb-6 text-center text-white relative">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">

@@ -1,20 +1,41 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:6969";
+// Sử dụng proxy trong development, absolute URL trong production
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? "" : "http://localhost:8081");
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // Quan trọng: để gửi cookies
   timeout: 10000,
 });
 
-// Request interceptor để thêm access token
+// Request interceptor để thêm access token và credentials
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Chỉ gửi cookies cho các endpoint cần thiết
+    const needCredentialsEndpoints = [
+      "/api/auth/login",
+      "/api/auth/register",
+      "/api/auth/refresh-token",
+      "/api/auth/logout",
+      "/api/user/profile",
+    ];
+
+    const needsCredentials =
+      needCredentialsEndpoints.some((endpoint) =>
+        config.url?.includes(endpoint)
+      ) || !!token; // Hoặc khi đã có token
+
+    if (needsCredentials) {
+      config.withCredentials = true;
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -33,7 +54,7 @@ apiClient.interceptors.response.use(
         const refreshResponse = await axios.post(
           `${API_BASE_URL}/api/auth/refresh-token`,
           {},
-          { withCredentials: true }
+          { withCredentials: true } // Refresh token luôn cần cookies
         );
 
         const newToken = refreshResponse.data.data.accessToken;

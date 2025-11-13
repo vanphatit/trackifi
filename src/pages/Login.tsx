@@ -44,8 +44,9 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-4xl border border-gray-200">
+    <div className="min-h-screen flex items-center justify-center p-6 sm:p-8 lg:p-10">
+      {/* Card: responsive max-width + min-width to prevent being too narrow */}
+      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 w-[500px] max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl border border-gray-200 min-w-[320px]">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
