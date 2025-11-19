@@ -1,4 +1,5 @@
 import Avatar from "./Avatar";
+import { Heart } from "lucide-react";
 
 interface ProfileCardProps {
   name: string;
@@ -39,8 +40,8 @@ export default function ProfileCard({ name, studentId }: ProfileCardProps) {
 
           {/* Footer */}
           <div className="pt-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500">
-              Được tạo với ❤️ bằng React + Tailwind CSS
+            <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
+              Được tạo với <Heart className="h-3 w-3 text-red-500" /> bằng React + Tailwind CSS
             </p>
           </div>
         </div>

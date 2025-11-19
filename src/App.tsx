@@ -11,6 +11,8 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import MyProfile from "./pages/MyProfile";
+import Home from "./pages/Home";
+import Search from "./pages/Search";
 import "./App.css";
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
         <div className="App">
           <Routes>
             {/* Public routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/search" element={<Search />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -36,8 +40,7 @@ function App() {
             />
 
             {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/profile" replace />} />
-            <Route path="*" element={<Navigate to="/profile" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </Router>
