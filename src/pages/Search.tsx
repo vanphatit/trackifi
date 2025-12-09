@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import axios from "axios";
 import AppLayout from "../components/AppLayout";
+import Pagination from "../components/Pagination";
+import WishlistButton from "../components/WishlistButton";
 import { SearchService, type SearchResponse } from "../services/searchService";
-import { ProductService, type Product } from "../services/productService"; // Import Product type
+import type { Product } from "../services/productService";
 
 const filterGroups = [
   "Bộ lọc",
@@ -35,8 +36,9 @@ function formatCurrency(value: string | number | undefined) {
 }
 
 function Search() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") ?? "";
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,10 @@ function Search() {
     const map = new Map<number, string[]>();
     products.forEach((product) => {
       if (product.shortDescription) {
-        map.set(product.id, product.shortDescription.split("|").map((item) => item.trim()));
+        map.set(
+          product.id,
+          product.shortDescription.split("|").map((item) => item.trim())
+        );
       } else if (product.specs) {
         map.set(product.id, Object.values(product.specs));
       } else {
@@ -62,7 +67,7 @@ function Search() {
       setMeta(null);
       return;
     }
-    
+
     // Note: SearchService doesn't support abort signal yet, so we'll handle race conditions simply
     let active = true;
 
@@ -71,19 +76,23 @@ function Search() {
       setError(null);
       try {
         const response = await SearchService.searchProducts({
-            q: query,
-            page: 1,
-            limit: 12,
-            sortBy: "relevance"
+          q: query,
+          page: currentPage,
+          limit: 12,
+          sortBy: "relevance",
         });
-        
+
         if (active) {
-            setProducts(response.data.products || []);
-            setMeta(response.data.meta || null);
+          setProducts(response.data.products || []);
+          setMeta(response.data.meta || null);
         }
-      } catch (err: any) {
+      } catch (err) {
         if (active) {
-          setError(err.message || "Không thể tải dữ liệu tìm kiếm. Vui lòng thử lại.");
+          const message =
+            err instanceof Error
+              ? err.message
+              : "Không thể tải dữ liệu tìm kiếm. Vui lòng thử lại.";
+          setError(message);
           setProducts([]);
         }
       } finally {
@@ -92,8 +101,15 @@ function Search() {
     }
 
     fetchProducts();
-    return () => { active = false; };
-  }, [query]);
+    return () => {
+      active = false;
+    };
+  }, [query, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setSearchParams({ q: query, page: page.toString() });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const renderHeaderTitle = () => {
     if (!query) {
@@ -103,7 +119,8 @@ function Search() {
             Nhập từ khóa để bắt đầu tìm kiếm
           </h1>
           <p className="text-sm text-slate-500">
-            Ví dụ: &ldquo;ROG&rdquo;, &ldquo;Laptop văn phòng&rdquo;, &ldquo;RTX 4070&rdquo;
+            Ví dụ: &ldquo;ROG&rdquo;, &ldquo;Laptop văn phòng&rdquo;, &ldquo;RTX
+            4070&rdquo;
           </p>
         </>
       );
@@ -189,7 +206,7 @@ function Search() {
                   key={product.id}
                   className="flex flex-col rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-red-500"
                 >
-                  <div className="mb-4 h-40 overflow-hidden rounded-2xl bg-slate-50">
+                  <div className="relative mb-4 h-40 overflow-hidden rounded-2xl bg-slate-50">
                     {product.images && product.images.length > 0 ? (
                       <img
                         src={product.images[0]}
@@ -201,6 +218,13 @@ function Search() {
                         No image
                       </div>
                     )}
+                    <div className="absolute right-2 top-2">
+                      <WishlistButton
+                        productId={product.id}
+                        variant="icon"
+                        size="sm"
+                      />
+                    </div>
                   </div>
                   <h2 className="text-base font-semibold text-slate-900">
                     {product.name}
@@ -222,22 +246,38 @@ function Search() {
                     {price}
                   </div>
                   <div className="text-sm text-slate-400">
-                    {oldPrice && <span className="line-through">{oldPrice}</span>}{" "}
+                    {oldPrice && (
+                      <span className="line-through">{oldPrice}</span>
+                    )}{" "}
                     {discountPercent > 0 && (
                       <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-600">
                         -{discountPercent}%
                       </span>
                     )}
                   </div>
-                    <Link
-                      to={`/products/${product.id}`}
-                      className="mt-4 rounded-full border border-red-500 px-4 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-500 hover:text-white text-center"
-                    >
-                      Xem chi tiết
-                    </Link>
-                  </article>
-                );
-              })}
+                  <Link
+                    to={`/products/${product.id}`}
+                    className="mt-4 rounded-full border border-red-500 px-4 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-500 hover:text-white text-center"
+                  >
+                    Xem chi tiết
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {meta && Math.ceil(meta.total / meta.limit) > 1 && (
+          <div className="mt-10">
+            <Pagination
+              currentPage={meta.page}
+              totalPages={Math.ceil(meta.total / meta.limit)}
+              onPageChange={handlePageChange}
+              totalItems={meta.total}
+              itemsPerPage={meta.limit}
+              showInfo={true}
+            />
           </div>
         )}
       </section>

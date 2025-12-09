@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AppLayout from "../components/AppLayout";
-import { ProductService, type BestSellerProduct } from "../services/productService";
+import RecentlyViewed from "../components/RecentlyViewed";
+import WishlistButton from "../components/WishlistButton";
+import {
+  ProductService,
+  type BestSellerProduct,
+} from "../services/productService";
+import {
+  RecentlyViewedService,
+  type RecentlyViewedProduct,
+} from "../services/recentlyViewedService";
+import { useAuth } from "../context/AuthContext";
 import { Loader2 } from "lucide-react";
 
 function formatCurrency(value: string | number | undefined) {
@@ -64,6 +74,11 @@ function Home() {
   const [bestSellerPCs, setBestSellerPCs] = useState<BestSellerProduct[]>([]);
   const [isLoadingBestSellers, setIsLoadingBestSellers] = useState(true);
   const [errorBestSellers, setErrorBestSellers] = useState<string | null>(null);
+  const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewedProduct[]>(
+    []
+  );
+  const [isLoadingRecentlyViewed, setIsLoadingRecentlyViewed] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchBestSellers() {
@@ -72,7 +87,9 @@ function Home() {
         if (response.success) {
           setBestSellerPCs(response.data);
         } else {
-          setErrorBestSellers(response.message || "Failed to fetch best sellers.");
+          setErrorBestSellers(
+            response.message || "Failed to fetch best sellers."
+          );
         }
       } catch (err: any) {
         setErrorBestSellers(err.message || "An unexpected error occurred.");
@@ -82,6 +99,25 @@ function Home() {
     }
     fetchBestSellers();
   }, []);
+
+  useEffect(() => {
+    async function fetchRecentlyViewed() {
+      if (!user) return;
+
+      setIsLoadingRecentlyViewed(true);
+      try {
+        const response = await RecentlyViewedService.getRecentlyViewed(6);
+        if (response.success) {
+          setRecentlyViewed(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recently viewed", err);
+      } finally {
+        setIsLoadingRecentlyViewed(false);
+      }
+    }
+    fetchRecentlyViewed();
+  }, [user]);
 
   return (
     <AppLayout contentClassName="mx-auto max-w-6xl px-4 py-8 lg:px-0">
@@ -169,9 +205,7 @@ function Home() {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
           <div className="flex items-center gap-3 text-lg font-bold">
             <span>Sản phẩm bán chạy</span>
-            <span className="text-sm font-medium text-red-500">
-              Trả góp 0%
-            </span>
+            <span className="text-sm font-medium text-red-500">Trả góp 0%</span>
           </div>
           <div className="flex flex-wrap gap-3 text-sm font-semibold text-slate-500">
             {["PC i3", "PC i5", "PC i7", "PC i9"].map((tab) => (
@@ -191,7 +225,9 @@ function Home() {
               <Loader2 className="h-8 w-8 animate-spin text-red-500" />
             </div>
           ) : errorBestSellers ? (
-            <div className="text-center text-rose-600 py-10">{errorBestSellers}</div>
+            <div className="text-center text-rose-600 py-10">
+              {errorBestSellers}
+            </div>
           ) : (
             <div className="flex min-w-full gap-5">
               {bestSellerPCs.map((pc) => (
@@ -199,12 +235,25 @@ function Home() {
                   key={pc.id}
                   className="flex w-[260px] flex-shrink-0 flex-col rounded-2xl border border-slate-100 p-4 transition hover:-translate-y-1 hover:border-red-500"
                 >
-                  <div className="h-40 overflow-hidden rounded-xl bg-slate-100">
-                     {pc.images && pc.images.length > 0 ? (
-                        <img src={pc.images[0]} alt={pc.name} className="h-full w-full object-cover" />
-                     ) : (
-                       <div className="flex h-full w-full items-center justify-center text-slate-400">No Image</div>
-                     )}
+                  <div className="relative h-40 overflow-hidden rounded-xl bg-slate-100">
+                    {pc.images && pc.images.length > 0 ? (
+                      <img
+                        src={pc.images[0]}
+                        alt={pc.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-slate-400">
+                        No Image
+                      </div>
+                    )}
+                    <div className="absolute right-2 top-2">
+                      <WishlistButton
+                        productId={pc.id}
+                        variant="icon"
+                        size="sm"
+                      />
+                    </div>
                   </div>
                   <p className="mt-4 text-sm font-semibold text-slate-600 line-clamp-2 min-h-[40px]">
                     {pc.name}
@@ -265,17 +314,24 @@ function Home() {
                 <p className="mt-2 text-lg font-bold text-red-600">
                   {formatCurrency(laptop.price)}
                 </p>
-                  <Link
-                    to={`/products/${index + 1}`}
-                    className="mt-4 w-full block rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-red-500 hover:text-red-600 text-center"
-                  >
-                    Xem chi tiết
-                  </Link>
-                </div>
-              ))}
-            </div>
+                <Link
+                  to={`/products/${index + 1}`}
+                  className="mt-4 w-full block rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-red-500 hover:text-red-600 text-center"
+                >
+                  Xem chi tiết
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
+
+      {/* Recently Viewed Products */}
+      {user && !isLoadingRecentlyViewed && recentlyViewed.length > 0 && (
+        <section className="mt-10">
+          <RecentlyViewed products={recentlyViewed} />
+        </section>
+      )}
 
       <section className="mt-10 grid gap-6 lg:grid-cols-[2fr,1fr]">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

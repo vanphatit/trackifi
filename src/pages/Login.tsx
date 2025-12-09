@@ -1,45 +1,44 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../context/AuthContext";
 import AppLayout from "../components/AppLayout";
+import { loginSchema, type LoginFormData } from "../utils/validationSchemas";
 
 function Login() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState<string>("");
+  const [apiError, setApiError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
   const queryParams = new URLSearchParams(location.search);
-  const redirectUrl = queryParams.get("redirect") || location.state?.from?.pathname || "/profile";
+  const redirectUrl =
+    queryParams.get("redirect") || location.state?.from?.pathname || "/profile";
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    if (errors) setErrors("");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setErrors("");
+    setApiError("");
 
     try {
-      const result = await login(formData.email, formData.password);
+      const result = await login(data.email, data.password);
       if (result.success) {
         navigate(redirectUrl, { replace: true });
       } else {
-        setErrors(result.message);
+        setApiError(result.message);
       }
     } catch (error) {
-      setErrors("Đã xảy ra lỗi, vui lòng thử lại");
+      setApiError("Đã xảy ra lỗi, vui lòng thử lại");
     } finally {
       setIsLoading(false);
     }
@@ -60,14 +59,17 @@ function Login() {
         </div>
 
         {/* Error Message */}
-        {errors && (
+        {apiError && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-600">
-            {errors}
+            {apiError}
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-5 sm:space-y-6"
+        >
           <div>
             <label
               htmlFor="email"
@@ -78,13 +80,15 @@ function Login() {
             <input
               type="email"
               id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
+              {...register("email")}
               className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition duration-200 focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 sm:py-4 sm:text-base"
               placeholder="Nhập email của bạn"
             />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -97,13 +101,15 @@ function Login() {
             <input
               type="password"
               id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
+              {...register("password")}
               className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition duration-200 focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 sm:py-4 sm:text-base"
               placeholder="Nhập mật khẩu"
             />
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           <div className="flex items-center justify-between">

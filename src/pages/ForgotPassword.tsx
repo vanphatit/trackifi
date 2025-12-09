@@ -1,31 +1,43 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { AuthService } from "../services/authService";
 import AppLayout from "../components/AppLayout";
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordFormData,
+} from "../utils/validationSchemas";
 
 function ForgotPassword() {
-  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+  });
+
+  const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
-    setError("");
+    setApiError("");
     setMessage("");
 
     try {
-      const result = await AuthService.forgotPassword(email);
+      const result = await AuthService.forgotPassword(data.email);
       if (result.success) {
         setMessage(result.message);
         setIsSuccess(true);
       } else {
-        setError(result.message);
+        setApiError(result.message);
       }
     } catch (error) {
-      setError("Đã xảy ra lỗi, vui lòng thử lại");
+      setApiError("Đã xảy ra lỗi, vui lòng thử lại");
     } finally {
       setIsLoading(false);
     }
@@ -36,8 +48,12 @@ function ForgotPassword() {
       <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-2xl">
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="mb-2 text-3xl font-bold text-gray-800">Quên mật khẩu</h1>
-          <p className="text-gray-600">Nhập email để nhận link khôi phục mật khẩu</p>
+          <h1 className="mb-2 text-3xl font-bold text-gray-800">
+            Quên mật khẩu
+          </h1>
+          <p className="text-gray-600">
+            Nhập email để nhận link khôi phục mật khẩu
+          </p>
         </div>
 
         {/* Success Message */}
@@ -48,16 +64,16 @@ function ForgotPassword() {
         )}
 
         {/* Error Message */}
-        {error && (
+        {apiError && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-600">
-            {error}
+            {apiError}
           </div>
         )}
 
         {!isSuccess ? (
           <>
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <label
                   htmlFor="email"
@@ -67,26 +83,29 @@ function ForgotPassword() {
                 </label>
                 <input
                   type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nhập email của bạn"
-              />
-            </div>
+                  id="email"
+                  {...register("email")}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nhập email của bạn"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition duration-200 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="mr-2 h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
-                  Đang gửi...
-                </div>
-              ) : (
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition duration-200 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="mr-2 h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
+                    Đang gửi...
+                  </div>
+                ) : (
                   "Gửi link khôi phục"
                 )}
               </button>

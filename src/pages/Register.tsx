@@ -1,58 +1,56 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../context/AuthContext";
-import type { RegisterData } from "../services/authService";
 import AppLayout from "../components/AppLayout";
+import {
+  registerSchema,
+  type RegisterFormData,
+} from "../utils/validationSchemas";
 
 function Register() {
-  const [formData, setFormData] = useState<RegisterData>({
-    email: "",
-    password: "",
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    gender: true,
-    address: "",
-  });
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<string>("");
+  const [apiError, setApiError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register } = useAuth();
+  const { register: registerUser } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "radio" ? value === "true" : value,
-    });
-    if (errors) setErrors("");
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
-    setErrors("");
-
-    // Validate password confirmation
-    if (formData.password !== confirmPassword) {
-      setErrors("Mật khẩu xác nhận không khớp");
-      setIsLoading(false);
-      return;
-    }
+    setApiError("");
 
     try {
-      const result = await register(formData);
+      // Split name into firstName and lastName
+      const nameParts = data.name.trim().split(/\s+/);
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(" ") || firstName;
+
+      const result = await registerUser({
+        email: data.email,
+        password: data.password,
+        firstName,
+        lastName,
+        phoneNumber: data.phone || "",
+        address: data.address || "",
+        gender: true, // Default value
+      });
+
       if (result.success) {
         navigate("/profile");
       } else {
-        setErrors(result.message);
+        setApiError(result.message);
       }
     } catch (error) {
-      setErrors("Đã xảy ra lỗi, vui lòng thử lại");
+      setApiError("Đã xảy ra lỗi, vui lòng thử lại");
     } finally {
       setIsLoading(false);
     }
@@ -66,55 +64,40 @@ function Register() {
           <h1 className="mb-3 text-2xl font-bold text-gray-800 sm:text-3xl lg:text-4xl">
             Đăng ký
           </h1>
-          <p className="text-sm text-gray-600 sm:text-base">Tạo tài khoản mới</p>
+          <p className="text-sm text-gray-600 sm:text-base">
+            Tạo tài khoản mới
+          </p>
         </div>
 
         {/* Error Message */}
-        {errors && (
+        {apiError && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-600">
-            {errors}
+            {apiError}
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Họ
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm transition duration-200 focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 sm:py-3 sm:text-base"
-                placeholder="Nhập họ"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Tên
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm transition duration-200 focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 sm:py-3 sm:text-base"
-                placeholder="Nhập tên"
-              />
-            </div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 sm:space-y-5"
+        >
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Họ và tên
+            </label>
+            <input
+              type="text"
+              id="name"
+              {...register("name")}
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm transition duration-200 focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 sm:py-3 sm:text-base"
+              placeholder="Nhập họ và tên"
+            />
+            {errors.name && (
+              <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+            )}
           </div>
 
           <div>
@@ -127,13 +110,15 @@ function Register() {
             <input
               type="email"
               id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
+              {...register("email")}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="example@email.com"
             />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -147,13 +132,15 @@ function Register() {
               <input
                 type="password"
                 id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
+                {...register("password")}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ín nhất 6 ký tự"
+                placeholder="Ít nhất 8 ký tự"
               />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
             <div>
               <label
@@ -165,61 +152,37 @@ function Register() {
               <input
                 type="password"
                 id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
+                {...register("confirmPassword")}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Nhập lại mật khẩu"
               />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div>
             <label
-              htmlFor="phoneNumber"
+              htmlFor="phone"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Số điện thoại (tuỳ chọn)
             </label>
             <input
               type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
+              id="phone"
+              {...register("phone")}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="+84123456789"
+              placeholder="0912345678"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Giới tính
-            </label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="gender"
-                value="true"
-                checked={formData.gender === true}
-                onChange={handleChange}
-                className="mr-2 text-blue-600 focus:ring-blue-500"
-              />
-                Nam
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="gender"
-                value="false"
-                checked={formData.gender === false}
-                onChange={handleChange}
-                className="mr-2 text-blue-600 focus:ring-blue-500"
-              />
-                Nữ
-              </label>
-            </div>
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.phone.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -232,12 +195,15 @@ function Register() {
             <input
               type="text"
               id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
+              {...register("address")}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Nhập địa chỉ"
             />
+            {errors.address && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.address.message}
+              </p>
+            )}
           </div>
 
           <button

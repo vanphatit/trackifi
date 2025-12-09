@@ -1,62 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { AuthService } from "../services/authService";
 import AppLayout from "../components/AppLayout";
+import {
+  resetPasswordSchema,
+  type ResetPasswordFormData,
+} from "../utils/validationSchemas";
 
 function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    newPassword: "",
-    confirmPassword: "",
-  });
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const token = searchParams.get("token");
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+  });
+
   useEffect(() => {
     if (!token) {
-      setError("Token không hợp lệ ");
+      setApiError("Token không hợp lệ");
     }
   }, [token]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    if (error) setError("");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) {
-      setError("Token không hợp lệ");
-      return;
-    }
-
-    if (formData.newPassword !== formData.confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
-      return;
-    }
-
-    if (formData.newPassword.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự");
+      setApiError("Token không hợp lệ");
       return;
     }
 
     setIsLoading(true);
-    setError("");
+    setApiError("");
 
     try {
-      const result = await AuthService.resetPassword(
-        token,
-        formData.newPassword
-      );
+      const result = await AuthService.resetPassword(token, data.password);
       if (result.success) {
         setMessage(result.message);
         setIsSuccess(true);
@@ -64,10 +51,10 @@ function ResetPassword() {
           navigate("/login");
         }, 3000);
       } else {
-        setError(result.message);
+        setApiError(result.message);
       }
     } catch (error) {
-      setError("Đã xảy ra lỗi, vui lòng thử lại");
+      setApiError("Đã xảy ra lỗi, vui lòng thử lại");
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +65,9 @@ function ResetPassword() {
       <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-2xl">
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="mb-2 text-3xl font-bold text-gray-800">Đặt lại mật khẩu</h1>
+          <h1 className="mb-2 text-3xl font-bold text-gray-800">
+            Đặt lại mật khẩu
+          </h1>
           <p className="text-gray-600">Nhập mật khẩu mới của bạn</p>
         </div>
 
@@ -93,33 +82,36 @@ function ResetPassword() {
         )}
 
         {/* Error Message */}
-        {error && (
+        {/* Error Message */}
+        {apiError && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-600">
-            {error}
+            {apiError}
           </div>
         )}
 
         {!isSuccess && (
           <>
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <label
-                  htmlFor="newPassword"
+                  htmlFor="password"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Mật khẩu mới
                 </label>
                 <input
                   type="password"
-                  id="newPassword"
-                  name="newPassword"
-                  value={formData.newPassword}
-                  onChange={handleChange}
-                  required
+                  id="password"
+                  {...register("password")}
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)"
+                  placeholder="Nhập mật khẩu mới (ít nhất 8 ký tự)"
                 />
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -132,13 +124,15 @@ function ResetPassword() {
                 <input
                   type="password"
                   id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
+                  {...register("confirmPassword")}
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Nhập lại mật khẩu mới"
                 />
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
 
               <button
