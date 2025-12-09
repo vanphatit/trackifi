@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import {
-  Headphones,
   ClipboardList,
   ShoppingCart,
   Menu,
@@ -41,14 +41,16 @@ const quickActions: Array<{
   value?: string;
   icon: LucideIcon;
   highlight?: boolean;
+  to?: string;
 }> = [
-  { label: "Tra cứu đơn hàng", icon: ClipboardList },
-  { label: "Giỏ hàng", icon: ShoppingCart, highlight: true },
+  { label: "Tra cứu đơn hàng", icon: ClipboardList, to: "/search" },
+  { label: "Giỏ hàng", icon: ShoppingCart, highlight: true, to: "/cart" },
 ];
 
 function Header() {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const { user } = useAuth();
+  const { totalItems } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState(
@@ -142,13 +144,14 @@ function Header() {
           {quickActions.map((item) => (
             <button
               key={item.label}
+              onClick={() => item.to && navigate(item.to)}
               className="flex min-w-[150px] items-center gap-3 rounded-2xl bg-white/10 px-3 py-2 text-left transition hover:bg-white/20"
             >
               <span className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/40 bg-white/10">
                 <item.icon className="h-5 w-5" aria-hidden="true" />
-                {item.highlight && (
+                {item.highlight && totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-red-700 shadow">
-                    0
+                    {totalItems}
                   </span>
                 )}
               </span>

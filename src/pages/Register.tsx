@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import type { RegisterData } from "../services/authService";
+import AppLayout from "../components/AppLayout";
 
 function Register() {
   const [formData, setFormData] = useState<RegisterData>({
@@ -58,21 +59,19 @@ function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 w-[560px] max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-4xl border border-gray-200">
+    <AppLayout contentClassName="flex min-h-[calc(100vh-180px)] items-center justify-center px-4 py-10">
+      <div className="w-[560px] max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl sm:max-w-lg sm:p-8 md:max-w-xl lg:max-w-2xl xl:max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
+        <div className="mb-8 text-center">
+          <h1 className="mb-3 text-2xl font-bold text-gray-800 sm:text-3xl lg:text-4xl">
             Đăng ký
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base">
-            Tạo tài khoản mới
-          </p>
+          <p className="text-sm text-gray-600 sm:text-base">Tạo tài khoản mới</p>
         </div>
 
         {/* Error Message */}
         {errors && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-600">
             {errors}
           </div>
         )}
@@ -94,7 +93,7 @@ function Register() {
                 value={formData.firstName}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 bg-gray-50 focus:bg-white"
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm transition duration-200 focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 sm:py-3 sm:text-base"
                 placeholder="Nhập họ"
               />
             </div>
@@ -112,7 +111,7 @@ function Register() {
                 value={formData.lastName}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 bg-gray-50 focus:bg-white"
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm transition duration-200 focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 sm:py-3 sm:text-base"
                 placeholder="Nhập tên"
               />
             </div>
@@ -132,7 +131,7 @@ function Register() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="example@email.com"
             />
           </div>
@@ -152,7 +151,7 @@ function Register() {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ín nhất 6 ký tự"
               />
             </div>
@@ -169,7 +168,7 @@ function Register() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Nhập lại mật khẩu"
               />
             </div>
@@ -188,7 +187,7 @@ function Register() {
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="+84123456789"
             />
           </div>
@@ -202,22 +201,22 @@ function Register() {
                 <input
                   type="radio"
                   name="gender"
-                  value="true"
-                  checked={formData.gender === true}
-                  onChange={handleChange}
-                  className="mr-2 text-blue-600 focus:ring-blue-500"
-                />
+                value="true"
+                checked={formData.gender === true}
+                onChange={handleChange}
+                className="mr-2 text-blue-600 focus:ring-blue-500"
+              />
                 Nam
               </label>
               <label className="flex items-center">
                 <input
                   type="radio"
                   name="gender"
-                  value="false"
-                  checked={formData.gender === false}
-                  onChange={handleChange}
-                  className="mr-2 text-blue-600 focus:ring-blue-500"
-                />
+                value="false"
+                checked={formData.gender === false}
+                onChange={handleChange}
+                className="mr-2 text-blue-600 focus:ring-blue-500"
+              />
                 Nữ
               </label>
             </div>
@@ -236,7 +235,7 @@ function Register() {
               name="address"
               value={formData.address}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Nhập địa chỉ"
             />
           </div>
@@ -244,11 +243,11 @@ function Register() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 sm:py-4 px-6 rounded-lg font-semibold text-sm sm:text-base hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl mt-6"
+            className="mt-6 w-full rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:py-4 sm:text-base"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                <div className="mr-2 h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
                 Đang đăng ký...
               </div>
             ) : (
@@ -263,14 +262,14 @@ function Register() {
             Đã có tài khoản?{" "}
             <Link
               to="/login"
-              className="text-blue-600 hover:text-blue-800 font-semibold transition duration-200"
+              className="font-semibold text-blue-600 transition duration-200 hover:text-blue-800"
             >
               Đăng nhập
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

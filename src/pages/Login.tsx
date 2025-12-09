@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import AppLayout from "../components/AppLayout";
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -14,7 +15,8 @@ function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || "/profile";
+  const queryParams = new URLSearchParams(location.search);
+  const redirectUrl = queryParams.get("redirect") || location.state?.from?.pathname || "/profile";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -32,7 +34,7 @@ function Login() {
     try {
       const result = await login(formData.email, formData.password);
       if (result.success) {
-        navigate(from, { replace: true });
+        navigate(redirectUrl, { replace: true });
       } else {
         setErrors(result.message);
       }
@@ -44,22 +46,22 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 sm:p-8 lg:p-10">
+    <AppLayout contentClassName="flex min-h-[calc(100vh-180px)] items-center justify-center px-4 py-10">
       {/* Card: responsive max-width + min-width to prevent being too narrow */}
-      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 w-[500px] max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl border border-gray-200 min-w-[320px]">
+      <div className="w-[500px] max-w-sm min-w-[320px] rounded-2xl border border-gray-200 bg-white p-6 shadow-xl sm:max-w-md sm:p-8 md:max-w-lg lg:max-w-2xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
+        <div className="mb-8 text-center">
+          <h1 className="mb-3 text-2xl font-bold text-gray-800 sm:text-3xl lg:text-4xl">
             Đăng nhập
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base">
+          <p className="text-sm text-gray-600 sm:text-base">
             Chào mừng bạn trở lại!
           </p>
         </div>
 
         {/* Error Message */}
         {errors && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-600">
             {errors}
           </div>
         )}
@@ -69,7 +71,7 @@ function Login() {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="mb-2 block text-sm font-medium text-gray-700"
             >
               Email
             </label>
@@ -80,7 +82,7 @@ function Login() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 sm:py-4 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 bg-gray-50 focus:bg-white"
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition duration-200 focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 sm:py-4 sm:text-base"
               placeholder="Nhập email của bạn"
             />
           </div>
@@ -88,7 +90,7 @@ function Login() {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="mb-2 block text-sm font-medium text-gray-700"
             >
               Mật khẩu
             </label>
@@ -99,7 +101,7 @@ function Login() {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 sm:py-4 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 bg-gray-50 focus:bg-white"
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm transition duration-200 focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 sm:py-4 sm:text-base"
               placeholder="Nhập mật khẩu"
             />
           </div>
@@ -107,7 +109,7 @@ function Login() {
           <div className="flex items-center justify-between">
             <Link
               to="/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-800 transition duration-200"
+              className="text-sm text-blue-600 transition duration-200 hover:text-blue-800"
             >
               Quên mật khẩu?
             </Link>
@@ -116,11 +118,11 @@ function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 sm:py-4 px-6 rounded-lg font-semibold text-sm sm:text-base hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+            className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:py-4 sm:text-base"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                <div className="mr-2 h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
                 Đang đăng nhập...
               </div>
             ) : (
@@ -135,14 +137,14 @@ function Login() {
             Chưa có tài khoản?{" "}
             <Link
               to="/register"
-              className="text-blue-600 hover:text-blue-800 font-semibold transition duration-200"
+              className="font-semibold text-blue-600 transition duration-200 hover:text-blue-800"
             >
               Đăng ký ngay
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

@@ -42,4 +42,43 @@ export class UserService {
       };
     }
   }
+
+  // Đổi mật khẩu
+  static async changePassword(currentPassword: string, newPassword: string) {
+    try {
+      const response = await apiClient.patch("/api/user/profile/password", {
+        currentPassword,
+        newPassword,
+      });
+      return {
+        success: true,
+        message: response.data.message || "Đổi mật khẩu thành công",
+      };
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return {
+        success: false,
+        message: err.response?.data?.message || "Đổi mật khẩu thất bại",
+      };
+    }
+  }
+
+  // Vô hiệu hoá tài khoản
+  static async deactivateAccount(reason?: string) {
+    try {
+      const response = await apiClient.delete("/api/user/profile", {
+        data: reason ? { reason } : undefined,
+      });
+      return {
+        success: true,
+        message: response.data.message || "Tài khoản đã được vô hiệu hoá",
+      };
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      return {
+        success: false,
+        message: err.response?.data?.message || "Vô hiệu hoá thất bại",
+      };
+    }
+  }
 }

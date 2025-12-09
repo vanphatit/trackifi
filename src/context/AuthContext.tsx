@@ -22,6 +22,11 @@ interface AuthContextType extends AuthState {
   updateProfile: (
     userData: Partial<User>
   ) => Promise<{ success: boolean; message: string }>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<{ success: boolean; message: string }>;
+  deactivateAccount: (reason?: string) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -134,12 +139,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   };
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    const result = await UserService.changePassword(currentPassword, newPassword);
+    if (result.success) {
+      localStorage.removeItem("accessToken");
+      dispatch({ type: "LOGOUT" });
+    }
+    return { success: result.success, message: result.message };
+  };
+
+  const deactivateAccount = async (reason?: string) => {
+    const result = await UserService.deactivateAccount(reason);
+    if (result.success) {
+      localStorage.removeItem("accessToken");
+      dispatch({ type: "LOGOUT" });
+    }
+    return { success: result.success, message: result.message };
+  };
+
   const value: AuthContextType = {
     ...state,
     login,
     register,
     logout,
     updateProfile,
+    changePassword,
+    deactivateAccount,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

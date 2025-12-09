@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthService } from "../services/authService";
+import AppLayout from "../components/AppLayout";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -31,28 +32,24 @@ function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-100">
+    <AppLayout contentClassName="flex min-h-[calc(100vh-180px)] items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-2xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Quên mật khẩu
-          </h1>
-          <p className="text-gray-600">
-            Nhập email để nhận link khôi phục mật khẩu
-          </p>
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 text-3xl font-bold text-gray-800">Quên mật khẩu</h1>
+          <p className="text-gray-600">Nhập email để nhận link khôi phục mật khẩu</p>
         </div>
 
         {/* Success Message */}
         {message && (
-          <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg mb-6">
+          <div className="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-600">
             {message}
           </div>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-600">
             {error}
           </div>
         )}
@@ -70,26 +67,26 @@ function ForgotPassword() {
                 </label>
                 <input
                   type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-                  placeholder="Nhập email của bạn"
-                />
-              </div>
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Nhập email của bạn"
+              />
+            </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Đang gửi...
-                  </div>
-                ) : (
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition duration-200 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="mr-2 h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
+                  Đang gửi...
+                </div>
+              ) : (
                   "Gửi link khôi phục"
                 )}
               </button>
@@ -99,7 +96,7 @@ function ForgotPassword() {
             <div className="mt-8 text-center">
               <Link
                 to="/login"
-                className="text-blue-600 hover:text-blue-800 font-semibold transition duration-200"
+                className="font-semibold text-blue-600 transition duration-200 hover:text-blue-800"
               >
                 ← Quay lại đăng nhập
               </Link>
@@ -138,7 +135,7 @@ function ForgotPassword() {
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

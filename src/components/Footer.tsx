@@ -38,7 +38,7 @@ function Footer() {
           <div>
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-red-600 px-3 py-2 text-2xl font-black text-white">
-                G
+                T
               </div>
               <div>
                 <p className="text-lg font-bold text-slate-900">
