@@ -9,7 +9,13 @@ export interface SearchParams {
   maxPrice?: number;
   minDiscount?: number;
   inStock?: boolean;
-  sortBy?: "relevance" | "price_asc" | "price_desc" | "newest" | "rating" | "name_asc";
+  sortBy?:
+    | "relevance"
+    | "price_asc"
+    | "price_desc"
+    | "newest"
+    | "rating"
+    | "name_asc";
   page?: number;
   limit?: number;
 }
@@ -33,8 +39,11 @@ export interface SearchResponse {
     meta: {
       page: number;
       limit: number;
-      total: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
     };
+    total: number;
   };
 }
 
@@ -67,14 +76,21 @@ export const SearchService = {
   searchProducts: async (params: SearchParams): Promise<SearchResponse> => {
     try {
       // API docs specify POST with Query Params
-      const response = await apiClient.post("/api/search/products", {}, { params });
+      const response = await apiClient.post(
+        "/api/search/products",
+        {},
+        { params }
+      );
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error.message;
     }
   },
 
-  autocomplete: async (q: string, limit: number = 5): Promise<AutocompleteResponse> => {
+  autocomplete: async (
+    q: string,
+    limit: number = 5
+  ): Promise<AutocompleteResponse> => {
     try {
       const response = await apiClient.get("/api/search/autocomplete", {
         params: { q, limit },
@@ -85,7 +101,10 @@ export const SearchService = {
     }
   },
 
-  getRelatedProducts: async (productId: number, limit: number = 6): Promise<RelatedProductsResponse> => {
+  getRelatedProducts: async (
+    productId: number,
+    limit: number = 6
+  ): Promise<RelatedProductsResponse> => {
     try {
       const response = await apiClient.get(`/api/search/related/${productId}`, {
         params: { limit },
